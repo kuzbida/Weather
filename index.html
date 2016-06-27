@@ -13,7 +13,7 @@
                     md-selected-item="selectedItem"
                     md-search-text-change="searchTextChange(searchText)"
                     md-search-text="searchText"
-                    md-items="item in querySearch(searchText)"
+                    md-items="item in cities"
                     md-item-text="item"
                     md-min-length="1"
                     placeholder="What is your favorite US state?">
@@ -28,6 +28,12 @@
             <md-button class="md-raised" type="submit">Button</md-button>
         </form>
     </md-content>
+
+    <div>
+        <ul>
+            <li ng-repeat="city in weatherList">{{city | json}}</li>
+        </ul>
+    </div>
 </div>
 
 <!-- Angular Material requires Angular.js Libraries -->
@@ -48,20 +54,16 @@
     app.controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
         $scope.searchText = null;
         $scope.searchTextChange = searchTextChange;
-        $scope.querySearch = querySearch;
         $scope.showWeather = showWeather;
+        $scope.cities = ['test', 'test1'];
+        $scope.weatherList = [];
 
         function searchTextChange(txt) {
-            console.log(txt)
-        }
-
-        function querySearch() {
-            return ['test', 'test1']
-        }
-
-        function showWeather() {
-            console.log($scope.selectedItem);
-            var url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyCZTe5RF9ObFCWEthyA_Tv2_4At3chW_xA&input=lv';
+            if(!txt.length){
+                return
+            }
+            console.log(txt);
+            var url = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?key=AIzaSyCZTe5RF9ObFCWEthyA_Tv2_4At3chW_xA&input='+txt;
             $http({
                 method: 'GET',
                 url: url,
@@ -71,11 +73,31 @@
                 dataType: 'json',
                 responseType:'json'
             }).then(function (resp) {
-                        debugger;
-                    }, function (reject) {
-                        debugger;
-                    });
+                debugger;
+                $scope.cities = resp.data;
+            }, function (reject) {
+                debugger;
+            });
 
+        }
+
+        function showWeather() {
+            console.log($scope.selectedItem);
+            var url = 'http://api.openweathermap.org/data/2.5/weather?appid=371ac5e982b75926338f1e05c72e4dcf&q='+$scope.selectedItem;
+            $http({
+                method: 'GET',
+                url: url,
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                dataType: 'json',
+                responseType:'json'
+            }).then(function (resp) {
+                $scope.weatherList.push(resp.data)
+                debugger;
+            }, function (reject) {
+                debugger;
+            });
         }
     }]);
 
